@@ -355,17 +355,27 @@ function draw() {
       }
     }
 
+    if (gamePlay === true && pauseState === 0 && playerLoses === 0 && phase === 4 &&
+      homeClicked === false && shopClicked === false && loseMenu === false){
+      fill(75, 0, 130);
+      rect(width / 2 - 125, 20, 250, 65, 10);
+      fill(255);
+      textSize(30);
+      textAlign(CENTER, CENTER);
+      text("Meet Boss Now", width / 2, 52);
+      textAlign(LEFT, BASELINE);
+    }
+
     // checking if game is paused
     if (pauseState === 2 && playerLoses === 0){
       textAlign(CENTER, CENTER);
       displayPauseMenu();
     }
     if (pauseState === 1){
-      if (countDownFrame < countDown.length * 60){
-        // Display the countDown animation for 40 frames
+      countDownFrame = countSound.currentTime();
+      if (countDownFrame < countDown.length){
         imageMode(CENTER);
-        image(countDown[int(countDownFrame / 60) % countDown.length], width/2, height/2);
-        countDownFrame++;
+        image(countDown[int(countDownFrame) % countDown.length], width/2, height/2);
         imageMode(CORNER);
       }
       else {
@@ -468,8 +478,17 @@ class Food{
   constructor(image, type){
     this.image = image;
     this.type = type;
-    this.x = -image.width;
+    this.x = -(Array.isArray(image) ? image[0].width : image.width);
     this.y = random(height - 150, 150);
+    if (type !== "obstacle"){
+      for (let i = 0; i < obstacles.length; i++){
+        if(collideRectRect(this.x, this.y, 100, 82,
+          obstacles[i].x, obstacles[i].y, 337, 228)){
+          this.y = random(height - 150, 150);
+          i = -1;
+        }
+      }
+    }
   }
   display(){
     image(this.image, this.x, this.y);
@@ -800,6 +819,13 @@ function mousePressed(){
         bubble.play();
         pauseState = 2;
       }
+    }
+
+    if (playerLoses === 0 && pauseState === 0 && phase === 4 &&
+      mouseX > width / 2 - 125 && mouseX < width / 2 + 125 &&
+      mouseY > 20 && mouseY < 85){
+      phase = 1;
+      switchingBossTime = 0;
     }
 
     if (
